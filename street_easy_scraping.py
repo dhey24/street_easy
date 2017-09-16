@@ -82,9 +82,9 @@ def main():
 
 	for i in range(1, 1):
 		if i == 1:
-			search_url = "http://streeteasy.com/for-rent/nyc/area:305,307,337%7Cbeds:1"
+			search_url = "http://streeteasy.com/for-rent/nyc/status:open%7Carea:305,307%7Cbeds:1"
 		else:
-			search_url = "http://streeteasy.com/for-rent/nyc/area:305,307,337%7Cbeds:1?page=" + \
+			search_url = "http://streeteasy.com/for-rent/nyc/status:open%7Carea:305,307%7Cbeds:1?page=" + \
 						  str(i)
 		time.sleep(random.randint(5, 15)) #occasionally pause for a few seconds
 
@@ -104,24 +104,34 @@ def main():
 if __name__ == '__main__':
 	ua = UserAgent()
 	headers = {'User-Agent': str(ua.random)}
-	search_url = "http://streeteasy.com/for-rent/nyc/area:305,307,337%7Cbeds:1"
+	search_url = "http://streeteasy.com/for-rent/nyc/area:305%7Cbeds:1"
+	#http://streeteasy.com/for-rent/nyc/area:305,307,320%7Cbeds:1
 	page = requests.get(search_url, headers=headers)
 	soup = BeautifulSoup(page.content, "lxml")
 	apts = soup.find_all("article", class_="item")
 
 	print len(apts)
 	if len(apts) == 0:
-		print page
+		print page.content
 
 	apt_meta = []	
 	for apt in apts:
 		apt_dict = {}
 		apt_dict['name'] = apt.h3.a.string
+		apt_dict['url'] = 'http://streeteasy.com' + apt.h3.a['href']
 		apt_dict['price'] = apt.find_all('span', {'class': 'price'})[0].string
-		apt_dict['neighborhood'] = apt.ul.a.string
+		try:
+			apt_dict['neighborhood'] = apt.ul.a.string
+		except AttributeError:
+			apt_dict['neighborhood'] = "Unknown"
 		apt_dict['n_bed'] = apt.find_all('li', {'class': 'first_detail_cell'})[0].string
-		apt_dict['n_bath'] = apt.find_all('li', {'class': 'detail_cell'})[0].string
-		apt_dict['sq_feet'] = apt.find_all('li', {'class': 'last_detail_cell'})[0].string
+		try:
+			apt_dict['n_bath'] = apt.find_all('li', {'class': 'detail_cell'})[0].string
+		except IndexError:
+			apt_dict['n_bath'] = apt.find_all('li', {'class': 'last_detail_cell'})[0].string
+			apt_dict['sq_feet'] = "?"
+		if 'sq_feet' not in apt_dict.keys():
+			apt_dict['sq_feet'] = re.sub(r'[^\x00-\x7F]+', '*', apt_dict['sq_feet']) 
 		apt_dict['latlong'] = apt['se:map:point']
 
 		pp.pprint(apt_dict)
