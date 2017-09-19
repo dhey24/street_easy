@@ -11,62 +11,78 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys  
+from selenium.webdriver.chrome.options import Options
 import pprint
 
 
 def scrape_details(browser, url):
-	browser.get(url)
 	amens = []
 	stops = []
 	description = ''
+	min_dist = 100
+	nearest_stop = ''
 	status = True
 	try:
-		wait = WebDriverWait(browser, 10)
-		wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'next')))
-		print "Page is ready!"
-		html_doc = browser.page_source
-		soup = BeautifulSoup(html_doc, "html.parser")
-
-		#find amenities
-		s_amens = soup.find_all('div', class_='third')
-		for div in s_amens:
-			if div.find("li") != None:
-				amens.append(div.find("li").string)
-
-		#description
-		desc = soup.find_all('blockquote')
-		#check if we got blocked
-		if len(desc) == 0:
-			print "BLOCKED??!?"
-			print page.content
-			description = ''
-		else:
-			description = desc[0].text
-
-		#subways
+		browser.get(url)
 		try:
-			transportation = soup.find_all('div', class_='transportation')	#assumes subway is first
-			subways = transportation[0].find_all('li')
-			subway_dict = {}
-			for subway in subways:
-				lines = []
-				for line in subway.find_all('span'):
-					lines.append(line.string)
-				#extract stop w/ regex
-				found = re.search('at ([\w\s]+)\n', subway.text)
-				stop = ''
-				if found:
-					stop = found.group(1)
-				#write to dict of closest stops
-				subway_dict['lines'] = lines
-				subway_dict['distance'] = subway.find('b').string
-				subway_dict['stop'] = stop
-				stops.append(subway_dict)
-		except:
-			print "subway extract failed"
-			
-	except TimeoutException:
-		print "page took too long to load..."
+			wait = WebDriverWait(browser, 10)
+			wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'initial')))
+			print "Page is ready!"
+			html_doc = browser.page_source
+			soup = BeautifulSoup(html_doc, "html.parser")
+
+			#find amenities
+			s_amens = soup.find_all('div', class_='third')
+			for div in s_amens:
+				if div.find("li") != None:
+					amens.append(div.find("li").string)
+
+			#description
+			desc = soup.find_all('blockquote')
+			#check if we got blocked
+			if len(desc) == 0:
+				print "BLOCKED??!?"
+				print page.content
+				description = ''
+			else:
+				description = desc[0].text
+				description = re.sub(r'[^\x00-\x7F]+', '*', description)
+
+			#subways
+			try:
+				transportation = soup.find_all('div', class_='transportation')	#assumes subway is first
+				subways = transportation[0].find_all('li')
+				subway_dict = {}
+				for subway in subways:
+					lines = []
+					for line in subway.find_all('span'):
+						lines.append(line.string)
+					#extract stop w/ regex
+					found = re.search('at ([\w\s]+)\n', subway.text)
+					stop = ''
+					if found:
+						stop = found.group(1)
+					#write to dict of closest stops
+					subway_dict['lines'] = lines
+					subway_dict['distance'] = subway.find('b').string
+					subway_dict['stop'] = stop
+					stops.append(subway_dict)
+				#find nearest subway
+				for stop in stops:
+				 	dist = float(stop['distance'].split(' ')[0])
+				 	if dist < min_dist:
+				 		nearest_stop = stop['stop'] + ' ' + str(stop['lines'])
+
+			except:
+				print "subway extract failed"
+				
+		except TimeoutException:
+			print "page took too long to load..."
+			status = False
+
+	except:
+		print "ERROR: URL get failed!"
 		status = False
 
 	time.sleep(random.randint(1,5))
@@ -75,14 +91,11 @@ def scrape_details(browser, url):
 
 
 def main():
-	ua = UserAgent()
-
-	request_headers = {'User-Agent': str(ua.random)}
 	browser = webdriver.Chrome(executable_path = "/Users/davidhey/Documents/chromedriver")
 	browser.set_window_position(0, 0)
-	browser.set_window_size(400, 1000)
+	browser.set_window_size(700, 1000)
 
-	filepath = './apartment_meta_scrape.csv'
+	filepath = './apartment_meta_scrape2.csv'
 
 	url_backlog = []
 
@@ -97,7 +110,7 @@ def main():
 		headers = headers + new_headers
 
 		#open file to write enriched data to
-		with open("./apartment_meta_scrape-enriched.csv", "wb") as outfile:
+		with open("./apartment_meta_scrape-enriched2.csv", "wb") as outfile:
 			writer = csv.writer(outfile)
 			writer.writerow(headers)
 			for row in reader:
@@ -113,11 +126,12 @@ def main():
 
 					writer.writerow(row)
 				else:
-					url_backlog.append(url)
+					url_backlog.append(row)
 
 			#now handle all the pages that timed out
 			while len(url_backlog) > 0:
-				url = url_backlog.pop(0)
+				row = url_backlog.pop(0)
+				url = row[8]
 				amens, description, stops, status = scrape_details(browser, url)
 				if status:
 					row.append(amens)
@@ -126,9 +140,11 @@ def main():
 					pprint.pprint({"description": description, "amens": amens})
 
 					writer.writerow(row)
+					print str(len(url_backlog)) + " items remaining in the backlog. \n"
 				else:
 					url_backlog.append(url)
-					time.sleep(random.randint(1,10))
+					print str(len(url_backlog)) + " items remaining in the backlog. \n"
+					time.sleep(random.randint(1, 10))
 
 
 if __name__ == '__main__':
