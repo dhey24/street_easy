@@ -14,14 +14,14 @@ import pprint
 browser = webdriver.Chrome(executable_path = "/Users/davidhey/Documents/chromedriver")
 browser.set_window_position(0, 0)
 browser.set_window_size(400, 1000)
-browser.get('http://streeteasy.com/for-rent/nyc/status:open%7Carea:305,321,328,307,320,302%7Cbeds:1	')
+browser.get('http://streeteasy.com/for-rent/nyc/area:115,107,105,157,305,321,328,307,303,304,320,319,302%7Cbeds:1')
 
 
-num_pages = 31
+num_pages = 100
 apt_meta = []	
 for i in range(num_pages):
 	try:
-		wait = WebDriverWait(browser, 30)
+		wait = WebDriverWait(browser, 10)
 		wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'next')))
 		print "Page is ready!"
 		html_doc = browser.page_source
@@ -42,7 +42,10 @@ for i in range(num_pages):
 			try:
 				apt_dict['n_bath'] = apt.find_all('li', {'class': 'detail_cell'})[0].string
 			except IndexError:
-				apt_dict['n_bath'] = apt.find_all('li', {'class': 'last_detail_cell'})[0].string
+				try:
+					apt_dict['n_bath'] = apt.find_all('li', {'class': 'last_detail_cell'})[0].string
+				except IndexError:
+					apt_dict['n_bath'] = "?"
 				apt_dict['sq_feet'] = "?"
 			if 'sq_feet' not in apt_dict.keys():
 				apt_dict['sq_feet'] = re.sub(r'[^\x00-\x7F]+', '*', apt.find_all('li', {'class': 'last_detail_cell'})[0].string) 

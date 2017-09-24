@@ -37,6 +37,10 @@ def scrape_details(browser, url):
 			for div in s_amens:
 				if div.find("li") != None:
 					amens.append(div.find("li").string)
+			#highlights
+			s_amens = soup.find_all('img', class_='amenities_icon')
+			for img in s_amens:
+				amens.append(img.parent.text.strip())
 
 			#description
 			desc = soup.find_all('blockquote')
@@ -73,6 +77,7 @@ def scrape_details(browser, url):
 				 	dist = float(stop['distance'].split(' ')[0])
 				 	if dist < min_dist:
 				 		nearest_stop = stop['stop'] + ' ' + str(stop['lines'])
+				 		min_dist = dist
 
 			except:
 				print "subway extract failed"
@@ -87,7 +92,7 @@ def scrape_details(browser, url):
 
 	time.sleep(random.randint(1,5))
 
-	return amens, description, stops, status
+	return amens, description, stops, status, min_dist, nearest_stop
 
 
 def main():
@@ -106,7 +111,7 @@ def main():
 		headers = reader.next()
 		for header in headers:
 			print headers.index(header), header
-		new_headers = ["amenities", "description", "subways"]
+		new_headers = ["amenities", "description", "subways", "min_subway_dist", "nearest_subway_stop"]
 		headers = headers + new_headers
 
 		#open file to write enriched data to
@@ -115,13 +120,13 @@ def main():
 			writer.writerow(headers)
 			for row in reader:
 				url = row[8]
-				#page = requests.get(url, headers=request_headers)
-				#soup = BeautifulSoup(page.content, "lxml")
-				amens, description, stops, status = scrape_details(browser, url)
+				amens, description, stops, status, min_dist, nearest_stop = scrape_details(browser, url)
 				if status:
 					row.append(amens)
 					row.append(description)
 					row.append(stops)
+					row.append(min_dist)
+					row.append(nearest_stop)
 					pprint.pprint({"description": description, "amens": amens})
 
 					writer.writerow(row)
@@ -132,11 +137,13 @@ def main():
 			while len(url_backlog) > 0:
 				row = url_backlog.pop(0)
 				url = row[8]
-				amens, description, stops, status = scrape_details(browser, url)
+				amens, description, stops, status, min_dist, nearest_stop = scrape_details(browser, url)
 				if status:
 					row.append(amens)
 					row.append(description)
 					row.append(stops)
+					row.append(min_dist)
+					row.append(nearest_stop)
 					pprint.pprint({"description": description, "amens": amens})
 
 					writer.writerow(row)
