@@ -3,3 +3,5 @@
 TomorrowlandCSVs
 EDC CSVs
 *.xlsx
+secret.py*
+*.pyc
