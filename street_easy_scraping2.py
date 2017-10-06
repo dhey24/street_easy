@@ -65,3 +65,59 @@ for i in range(num_pages):
 
 df = pd.DataFrame.from_dict(apt_meta)
 df.to_csv('apartment_meta_scrape.csv')
+
+def scrape_listings(url, num_pages):
+	"""Given a street easy search URL, pull all the listings into a dataframe
+	   Note: need to manually check how many pages of results there are
+	"""
+	browser = webdriver.Chrome(executable_path = "/Users/davidhey/Documents/chromedriver")
+	browser.set_window_position(0, 0)
+	browser.set_window_size(400, 1000)
+	browser.get(url)
+
+	apt_meta = []	
+	for i in range(num_pages):
+		try:
+			wait = WebDriverWait(browser, 10)
+			wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'next')))
+			print "Page is ready!"
+			html_doc = browser.page_source
+			
+			soup = BeautifulSoup(html_doc, "html.parser")
+			apts = soup.find_all("article", class_="item")
+			
+			for apt in apts:
+				apt_dict = {}
+				apt_dict['name'] = apt.h3.a.string
+				apt_dict['url'] = 'http://streeteasy.com' + apt.h3.a['href']
+				apt_dict['price'] = apt.find_all('span', {'class': 'price'})[0].string
+				try:
+					apt_dict['neighborhood'] = apt.ul.a.string
+				except AttributeError:
+					apt_dict['neighborhood'] = "Unknown"
+				apt_dict['n_bed'] = apt.find_all('li', {'class': 'first_detail_cell'})[0].string
+				try:
+					apt_dict['n_bath'] = apt.find_all('li', {'class': 'detail_cell'})[0].string
+				except IndexError:
+					try:
+						apt_dict['n_bath'] = apt.find_all('li', {'class': 'last_detail_cell'})[0].string
+					except IndexError:
+						apt_dict['n_bath'] = "?"
+					apt_dict['sq_feet'] = "?"
+				if 'sq_feet' not in apt_dict.keys():
+					apt_dict['sq_feet'] = re.sub(r'[^\x00-\x7F]+', '*', apt.find_all('li', {'class': 'last_detail_cell'})[0].string) 
+				apt_dict['latlong'] = apt['se:map:point']
+
+				pprint.pprint(apt_dict)
+				apt_meta.append(apt_dict)
+
+			to_click = browser.find_elements_by_class_name('next')
+			pprint.pprint(to_click)
+			to_click[0].click()
+
+		except TimeoutException:
+			print "Loading took too much time!"
+
+	df = pd.DataFrame.from_dict(apt_meta)
+	
+	return df

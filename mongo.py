@@ -1,4 +1,5 @@
 from pymongo import MongoClient
+from street_easy_scraping2 import scrape_listings
 from secret import MONGO_USER, MONGO_PW
 import pprint
 
@@ -24,10 +25,14 @@ def main():
 	pprint.pprint(names)
 
 	#look for listings that are not in names
+	url = "https://streeteasy.com/for-rent/nyc/area:100,300%7Cbeds:1"
+	num_pages = 500
+	df = scrape_listings(url, num_pages)
 
-	#pull their data into pandas/csv/pkl
+	#drop listings we already have in mongo
+	df = df[~df['name'].isin(names)]
 
-	#write back into mongoDB
+	#enrich the listings with details (from page and google maps)
 
 
 if __name__ == '__main__':
