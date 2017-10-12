@@ -16,6 +16,104 @@ from selenium.webdriver.chrome.options import Options
 import pprint
 
 
+def scrape_details_wrapper(browser, url):
+	"""same as scrape_details, but returns dict"""
+	amens = []
+	stops = []
+	description = ''
+	min_dist = 100
+	nearest_stop = ''
+	status = True
+	no_fee = ''
+	try:
+		browser.get(url)
+		try:
+			wait = WebDriverWait(browser, 10)
+			wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'initial')))
+			print "Page is ready!"
+			html_doc = browser.page_source
+			soup = BeautifulSoup(html_doc, "html.parser")
+
+			#no fee?
+			s_fee = soup.find_all('div', class_='status nofee')
+			if len(s_fee) > 0: 	#double check this doesnt break with fee apts
+				no_fee = s_fee[0].text
+			else:
+				no_fee = "FEE"
+
+			#find amenities
+			s_amens = soup.find_all('div', class_='third')
+			for div in s_amens:
+				if div.find("li") != None:
+					amens.append(div.find("li").string)
+
+			#highlights
+			s_amens = soup.find_all('img', class_='amenities_icon')
+			for img in s_amens:
+				amens.append(img.parent.text.strip())
+
+			#description
+			desc = soup.find_all('blockquote')
+			#check if we got blocked
+			if len(desc) == 0:
+				print "BLOCKED??!?"
+				print page.content
+				description = ''
+			else:
+				description = desc[0].text
+				description = re.sub(r'[^\x00-\x7F]+', '*', description)
+
+			#subways
+			try:
+				transportation = soup.find_all('div', class_='transportation')	#assumes subway is first
+				subways = transportation[0].find_all('li')
+				subway_dict = {}
+				for subway in subways:
+					lines = []
+					for line in subway.find_all('span'):
+						lines.append(line.string)
+					#extract stop w/ regex
+					found = re.search('at ([\w\s]+)\n', subway.text)
+					stop = ''
+					if found:
+						stop = found.group(1)
+					#write to dict of closest stops
+					subway_dict['lines'] = lines
+					subway_dict['distance'] = subway.find('b').string
+					subway_dict['stop'] = stop
+					stops.append(subway_dict)
+				#find nearest subway
+				for stop in stops:
+				 	dist = float(stop['distance'].split(' ')[0])
+				 	if dist < min_dist:
+				 		nearest_stop = stop['stop'] + ' ' + str(stop['lines'])
+				 		min_dist = dist
+
+			except:
+				print "subway extract failed"
+				
+		except TimeoutException:
+			print "page took too long to load..."
+			status = False
+
+	except:
+		print "ERROR: URL get failed!"
+		status = False
+
+	time.sleep(random.randint(1,5))
+
+	details_dict = {"url": url,
+					"amens": amens,
+					"descricption": description,
+					"stops": stops,
+					"status": status,
+					"min_dist": min_dist,
+					"nearest_stop": nearest_stop,
+					"no_fee": no_fee}
+
+	return details_dict
+
+
 def scrape_details(browser, url):
 	amens = []
 	stops = []
@@ -37,6 +135,7 @@ def scrape_details(browser, url):
 			for div in s_amens:
 				if div.find("li") != None:
 					amens.append(div.find("li").string)
+
 			#highlights
 			s_amens = soup.find_all('img', class_='amenities_icon')
 			for img in s_amens:
