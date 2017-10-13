@@ -7,6 +7,7 @@ import googlemaps
 import pprint
 from selenium import webdriver
 import pandas as pd
+from bs4 import BeautifulSoup
 
 
 def mongo_connect(user, pw):
@@ -29,10 +30,16 @@ def main():
 	names = unique_names()
 	pprint.pprint(names)
 
+	#set up street easy browser
+	browser = webdriver.Chrome(executable_path = "/Users/davidhey/Documents/chromedriver")
+	browser.set_window_position(0, 0)
+	browser.set_window_size(700, 1000)
+
 	#look for listings that are not in names
 	url = "https://streeteasy.com/for-rent/nyc/area:100,300%7Cbeds:1"
-	num_pages = 525		#really need a better/dynamic way of doing this
-	df = scrape_listings(url, num_pages)
+	#url = "https://streeteasy.com/for-rent/bushwick/beds:1"
+	#num_pages = 21		#really need a better/dynamic way of doing this
+	df = scrape_listings(url)
 
 	#drop listings we already have in mongo
 	df = df[~df['name'].isin(names)]
@@ -42,10 +49,6 @@ def main():
 	client = googlemaps.Client(key=api_key)
 	origins_dict = {"david_work_" : "320 Park Ave S, New York, NY 10010"}
 
-	#set up street easy browser
-	browser = webdriver.Chrome(executable_path = "/Users/davidhey/Documents/chromedriver")
-	browser.set_window_position(0, 0)
-	browser.set_window_size(700, 1000)
 
 	#convert df to list of dicts
 	print df.head()

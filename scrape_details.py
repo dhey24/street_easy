@@ -28,7 +28,7 @@ def scrape_details_wrapper(browser, url):
 	try:
 		browser.get(url)
 		try:
-			wait = WebDriverWait(browser, 10)
+			wait = WebDriverWait(browser, 30)
 			wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'initial')))
 			print "Page is ready!"
 			html_doc = browser.page_source

@@ -12,6 +12,23 @@ import re
 import pprint
 
 
+def last_page(soup):
+	"""are we on the last page of search results or not?"""
+	last = False
+	
+	#find number of pages returned by search
+	pages = soup.find_all('span', class_='page')
+	if len(pages) > 0:
+		last_page = pages[-1]
+	else:
+		return last
+
+	if "current" in last_page['class']:
+		last = True
+
+	return last
+
+
 def main():
 	browser = webdriver.Chrome(executable_path = "/Users/davidhey/Documents/chromedriver")
 	browser.set_window_position(0, 0)
@@ -71,7 +88,7 @@ def main():
 	return None
 
 
-def scrape_listings(url, num_pages):
+def scrape_listings(url, num_pages=1):
 	"""Given a street easy search URL, pull all the listings into a dataframe
 	   Note: need to manually check how many pages of results there are
 	"""
@@ -80,17 +97,21 @@ def scrape_listings(url, num_pages):
 	browser.set_window_size(400, 1000)
 	browser.get(url)
 
-	apt_meta = []	
-	for i in range(num_pages):
+	apt_meta = []
+	last = False
+	retry = 0
+	while last == False and retry < 10:
 		try:
 			wait = WebDriverWait(browser, 10)
 			wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'next')))
 			print "Page is ready!"
 			html_doc = browser.page_source
-			
 			soup = BeautifulSoup(html_doc, "html.parser")
-			apts = soup.find_all("article", class_="item")
 			
+			#are we on the last search results page?
+			last = last_page(soup)
+
+			apts = soup.find_all("article", class_="item")
 			for apt in apts:
 				apt_dict = {}
 				apt_dict['name'] = apt.h3.a.string
@@ -121,10 +142,17 @@ def scrape_listings(url, num_pages):
 			to_click[0].click()
 
 		except TimeoutException:
-			print "EXCEPTION: Loading took too much time!"
+			html_doc = browser.page_source
+			soup = BeautifulSoup(html_doc, "html.parser")
+			last = last_page(soup)
+			if last == False:
+				print "EXCEPTION: Loading took too much time!"
+				retry += 1
+				print "Retries so far = %i" % retry
 		except Exception as e:
 			print "EXCEPTION: other selinium exception (See below)"
 			print e
+			retry += 1
 
 	df = pd.DataFrame.from_dict(apt_meta)
 
