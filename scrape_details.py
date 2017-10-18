@@ -104,7 +104,7 @@ def scrape_details_wrapper(browser, url):
 
 	details_dict = {"url": url,
 					"amens": amens,
-					"descricption": description,
+					"description": description,
 					"stops": stops,
 					"status": status,
 					"min_dist": min_dist,

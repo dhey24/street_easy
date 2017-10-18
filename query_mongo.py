@@ -6,7 +6,8 @@ import pprint
 
 def main():
 	coll = mongo_connect(MONGO_USER, MONGO_PW)
-	listings = coll.find({"no_fee": {"$regex": u"NO"}}).limit(10)
+	#listings = coll.find({"no_fee": {"$regex": u"NO"}}).limit(10)
+	listings = coll.find()
 	df = pd.DataFrame(list(listings))
 	#pprint.pprint(listings[0])
 	print df.head()

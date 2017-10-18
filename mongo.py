@@ -37,7 +37,7 @@ def main():
 
 	#look for listings that are not in names
 	url = "https://streeteasy.com/for-rent/nyc/area:100,300%7Cbeds:1"
-	#url = "https://streeteasy.com/for-rent/bushwick/beds:1"
+	#url = "https://streeteasy.com/for-rent/nyc/area:158,364,320%7Cbeds:1"
 	#num_pages = 21		#really need a better/dynamic way of doing this
 	df = scrape_listings(url)
 
