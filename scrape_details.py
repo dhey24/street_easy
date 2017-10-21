@@ -103,7 +103,7 @@ def scrape_details_wrapper(browser, url):
 	time.sleep(random.randint(1,5))
 
 	details_dict = {"url": url,
-					"amens": amens,
+					"amenities": amens,
 					"description": description,
 					"stops": stops,
 					"status": status,
