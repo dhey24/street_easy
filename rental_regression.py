@@ -49,6 +49,13 @@ def price_cleanse(field):
 
 	return price
 
+
+def print_features(feat_cols, coef):
+	print "Coefficienct, Feature"
+	for i in range(len(coef)):
+		print coef[i], feat_cols[i]
+
+
 def main():
 	df = pd.read_csv("./mongo_listings.csv")
 	print df.head()
@@ -89,9 +96,18 @@ def main():
 	df['no_fee_bool'] = df.apply(lambda row: word_in_field("no fee", row['no_fee']), axis=1)
 
 	#do multivariate linear regression to predict price
-	feat_cols = ['nearest_subway_distance', 'sq_feet', 'work_duration_s',
-		         'no_fee_bool', 'roof', 'dishwasher', 'terrace', 
-		         'balcony', 'doorman', 'elevator', 'washer/dryer in-unit',
+	feat_cols = [
+				 'sq_feet', 
+				 #'nearest_subway_distance', 
+				 'work_duration_s',
+		         'no_fee_bool', 
+		         'roof', 
+		         'dishwasher', 
+		         #'terrace', 
+		         'balcony', 
+		         'doorman', 
+		         #'elevator', 
+		         'washer/dryer in-unit',
 		         'price'] #price needs to be last
 	#restrict columns used again
 	df = df[feat_cols]
@@ -102,6 +118,20 @@ def main():
 	df.dropna(inplace=True)
 	print df.isnull().sum()
 
+	#standardize numeric fields
+	sq_feet_mean = df['sq_feet'].mean()
+	sq_feet_sd = df['sq_feet'].std()
+	df['sq_feet_std'] = df.apply(lambda row: (row['sq_feet'] - sq_feet_mean) / sq_feet_sd, axis=1)
+
+	work_duration_s_mean = df['work_duration_s'].mean()
+	work_duration_s_sd = df['work_duration_s'].std()
+	df['work_duration_s_std'] = df.apply(lambda row: (row['work_duration_s'] - work_duration_s_mean) / work_duration_s_sd, axis=1)
+
+	#replace og with standardized features
+	feat_cols.remove('sq_feet')
+	feat_cols.remove('work_duration_s')
+	feat_cols.extend(['work_duration_s_std', 'sq_feet_std'])
+
 	#test train split
 	msk = np.random.rand(len(df)) < 0.8
 	train_df = df[msk]
@@ -109,21 +139,16 @@ def main():
 	print train_df.shape, "train"
 	print test_df.shape, "test"
 
-	feat_cols.pop()	#remove price from features
+	feat_cols.remove("price")	#remove price from features
 	y_train = train_df['price'].values
 	X_train = train_df[list(feat_cols)].values
-	#standardize X values
-	#scaler_train = StandardScaler()
-	#scaler_train.fit(X_train)
-	#print X_train[0:5]
-	#X_train = scaler_train.transform(X_train)
-	#print X_train[0:5]
 
 	y_test = test_df['price'].values
 	X_test = test_df[list(feat_cols)].values
+	print type(X_test)
 
 	#lasso regression
-	alphas = [1, .5, .25, .1, .05, .025, .01, .001, 0]
+	alphas = [100, 10, 5, 1, .5, .25, .1, .05, .025, .01, .001, 0]
 	for alpha in alphas:
 		print "\n### alpha = %s ###\n" % str(alpha)
 		lasso = Lasso(alpha=alpha)
@@ -133,8 +158,8 @@ def main():
 		r2_score_lasso = r2_score(y_test, y_pred_lasso)
 		print(lasso)
 		print("r^2 on test data : %f" % r2_score_lasso)
-		print "Coef:\n", clf.coef_
 		print "Intercept:\n", clf.intercept_
+		print_features(feat_cols, clf.coef_)
 
 		#error
 		y_test = np.array(y_test)
