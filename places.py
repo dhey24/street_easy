@@ -48,8 +48,7 @@ def count_places(query, location, cutoff_dist=.25):
 		results = response['results']
 		for result in results:
 			place = {'name': result['name'],
-					 'location': result['geometry']['location'],
-					 'rating': result['rating']}
+					 'location': result['geometry']['location']}
 			lat2 = place['location']['lat']
 			lon2 = place['location']['lng']
 			distance = haversine(lat1, lon1, lat2, lon2)
@@ -71,8 +70,7 @@ def count_places(query, location, cutoff_dist=.25):
 				results = response['results']
 				for result in results:
 					place = {'name': result['name'],
-							 'location': result['geometry']['location'],
-							 'rating': result['rating']}
+							 'location': result['geometry']['location']}
 					lat2 = place['location']['lat']
 					lon2 = place['location']['lng']
 					distance = haversine(lat1, lon1, lat2, lon2)
@@ -110,6 +108,7 @@ def place_agg(location):
 					"grocery_names": store_names}
 
 	pprint.pprint(place_fields)
+	
 	return place_fields
 
 
