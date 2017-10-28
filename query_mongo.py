@@ -14,7 +14,7 @@ def main():
 	df = pd.DataFrame(list(listings))
 	#pprint.pprint(listings[0])
 	print df.head()
-	df.to_csv("./mongo_listings.csv")
+	df.to_csv("./mongo_listings.csv", encoding='utf-8')
 
 
 def update_places():

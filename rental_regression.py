@@ -56,6 +56,13 @@ def print_features(feat_cols, coef):
 		print coef[i], feat_cols[i]
 
 
+def cout_to_bool(field):
+	if field > 0:
+		return 1
+	else:
+		return 0
+
+
 def main():
 	df = pd.read_csv("./mongo_listings.csv")
 	print df.head()
@@ -82,7 +89,8 @@ def main():
 	wanted_cols = ['amenities', 'description', 'latlong', 'nearest_subway_distance',
 				      'n_bath', 'n_bed', 'name', 'nearest_subway', 
 				      'neighborhood', 'no_fee', 'price', 'sq_feet', 'subways',
-				      'url', 'work_distance','work_duration_s']
+				      'url', 'work_distance','work_duration_s',
+				      'coffee_count', 'coffee_names', 'grocery_count', 'grocery_names']
 	#only keep wanted columns
 	print df.isnull().sum()
 	df = df[wanted_cols]
@@ -94,6 +102,14 @@ def main():
 
 	#1 if no fee, 0 if otherwise
 	df['no_fee_bool'] = df.apply(lambda row: word_in_field("no fee", row['no_fee']), axis=1)
+
+	#looking for specific grocery stores
+	df['whole_foods'] = df.apply(lambda row: word_in_field("whole foods", row['grocery_names']), axis=1)
+	df['trader_joes'] = df.apply(lambda row: word_in_field("trader joe", row['grocery_names']), axis=1)
+
+	#transform place counts
+	df['coffee'] = df.apply(lambda row: cout_to_bool(row['coffee_count']), axis=1)
+	df['grocery'] = df.apply(lambda row: cout_to_bool(row['grocery_count']), axis=1)
 
 	#do multivariate linear regression to predict price
 	feat_cols = [
@@ -108,6 +124,10 @@ def main():
 		         'doorman', 
 		         #'elevator', 
 		         'washer/dryer in-unit',
+		         #'coffee', 
+		         #'grocery', 
+		         'whole_foods',
+		         #'trader_joes',
 		         'price'] #price needs to be last
 	#restrict columns used again
 	df = df[feat_cols]

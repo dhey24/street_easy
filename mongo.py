@@ -3,6 +3,7 @@ from street_easy_scraping2 import scrape_listings
 from scrape_details import scrape_details_wrapper
 from commute_times import commute_time
 from secret import MONGO_USER, MONGO_PW, SECRET_KEY
+from places import place_agg
 import googlemaps
 import pprint
 from selenium import webdriver
@@ -36,8 +37,8 @@ def main():
 	browser.set_window_size(700, 1000)
 
 	#look for listings that are not in names
-	url = "https://streeteasy.com/for-rent/nyc/area:100,300%7Cbeds:1"
-	#url = "https://streeteasy.com/for-rent/nyc/area:158,364,320%7Cbeds:1"
+	#url = "https://streeteasy.com/for-rent/nyc/area:100,300%7Cbeds:1"
+	url = "https://streeteasy.com/for-rent/nyc/area:305,307,302%7Cbeds:1"
 	#num_pages = 21		#really need a better/dynamic way of doing this
 	df = scrape_listings(url)
 
@@ -64,7 +65,7 @@ def main():
 		listing = listings.pop(0)
 
 		try:
-			#query google maps info for each url
+			#query google maps distance matrix info for each url
 			ll = listing["latlong"].split(',')
 			latlng = {"lat": float(ll[0]), 
 					   "lng": float(ll[1])}
@@ -77,6 +78,14 @@ def main():
 				for key, val in commute_payload.iteritems():
 					listing[prefix+key] = val
 			
+			#query google maps places api for important stuff nearby
+			try:
+				place_fields = place_agg(listing['latlong'])
+				for key, val in place_fields.iteritems():
+					listing[key] = val
+			except Exception as ex:
+				print "ERROR: While getting nearby places \n%s" % str(ex)
+
 			#query street easy details for each url
 			deets_payload = scrape_details_wrapper(browser, listing["url"])
 			pprint.pprint(deets_payload)
