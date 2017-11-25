@@ -37,8 +37,8 @@ def main():
 	browser.set_window_size(700, 1000)
 
 	#look for listings that are not in names
-	#url = "https://streeteasy.com/for-rent/nyc/area:100,300%7Cbeds:1"
-	url = "https://streeteasy.com/for-rent/nyc/area:305,307,302%7Cbeds:1"
+	url = "https://streeteasy.com/for-rent/nyc/area:100,300%7Cbeds:1"
+	#url = "https://streeteasy.com/for-rent/nyc/area:305,307,302%7Cbeds:1"
 	#num_pages = 21		#really need a better/dynamic way of doing this
 	df = scrape_listings(url)
 

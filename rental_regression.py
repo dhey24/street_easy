@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import pprint
 from sklearn.cross_validation import train_test_split
-from sklearn.linear_model import Lasso
+from sklearn.linear_model import Lasso, Ridge
 from sklearn.metrics import r2_score, mean_squared_error
 from sklearn.preprocessing import StandardScaler
 
@@ -56,7 +56,7 @@ def print_features(feat_cols, coef):
 		print coef[i], feat_cols[i]
 
 
-def cout_to_bool(field):
+def count_to_bool(field):
 	if field > 0:
 		return 1
 	else:
@@ -108,8 +108,8 @@ def main():
 	df['trader_joes'] = df.apply(lambda row: word_in_field("trader joe", row['grocery_names']), axis=1)
 
 	#transform place counts
-	df['coffee'] = df.apply(lambda row: cout_to_bool(row['coffee_count']), axis=1)
-	df['grocery'] = df.apply(lambda row: cout_to_bool(row['grocery_count']), axis=1)
+	df['coffee'] = df.apply(lambda row: count_to_bool(row['coffee_count']), axis=1)
+	df['grocery'] = df.apply(lambda row: count_to_bool(row['grocery_count']), axis=1)
 
 	#do multivariate linear regression to predict price
 	feat_cols = [
@@ -120,7 +120,7 @@ def main():
 		         'roof', 
 		         'dishwasher', 
 		         #'terrace', 
-		         'balcony', 
+		         #'balcony', 
 		         'doorman', 
 		         #'elevator', 
 		         'washer/dryer in-unit',
@@ -148,9 +148,9 @@ def main():
 	df['work_duration_s_std'] = df.apply(lambda row: (row['work_duration_s'] - work_duration_s_mean) / work_duration_s_sd, axis=1)
 
 	#replace og with standardized features
-	feat_cols.remove('sq_feet')
-	feat_cols.remove('work_duration_s')
-	feat_cols.extend(['work_duration_s_std', 'sq_feet_std'])
+	#feat_cols.remove('sq_feet')
+	#feat_cols.remove('work_duration_s')
+	#feat_cols.extend(['work_duration_s_std', 'sq_feet_std'])
 
 	#test train split
 	msk = np.random.rand(len(df)) < 0.8
@@ -158,6 +158,8 @@ def main():
 	test_df = df[~msk]
 	print train_df.shape, "train"
 	print test_df.shape, "test"
+
+	### ADD CODE for removing outliers from training set
 
 	feat_cols.remove("price")	#remove price from features
 	y_train = train_df['price'].values
@@ -171,6 +173,9 @@ def main():
 	alphas = [100, 10, 5, 1, .5, .25, .1, .05, .025, .01, .001, 0]
 	for alpha in alphas:
 		print "\n### alpha = %s ###\n" % str(alpha)
+
+		#Lasso Regression
+		print "LASSO REGRESSION"
 		lasso = Lasso(alpha=alpha)
 
 		clf = lasso.fit(X_train, y_train)
@@ -188,6 +193,28 @@ def main():
 		print "ERROR of first 5..."
 		print y_err[0:5]
 
+		#Ridge Regression
+		print "\nRIDGE REGRESSION"
+		reg = Ridge(alpha=alpha)
+		clf = reg.fit(X_train, y_train)
+		y_pred_ridge= clf.predict(X_test)
+		r2_score_ridge = r2_score(y_test, y_pred_ridge)
+		print(reg)
+		print("r^2 on test data : %f" % r2_score_ridge)
+		print "Intercept:\n", clf.intercept_
+		print_features(feat_cols, clf.coef_)
+
+		#error
+		y_test = np.array(y_test)
+		y_pred_ridge = np.array(y_pred_ridge)
+		y_err = (y_pred_ridge - y_test)
+		print "ERROR of first 5..."
+		print y_err[0:5]
+
+	print "sq_feet mean, std"
+	print sq_feet_mean, sq_feet_sd
+	print "work_duration_s mean, sd"
+	print work_duration_s_mean, work_duration_s_sd
 
 if __name__ == '__main__':
 	main()
