@@ -33,7 +33,7 @@ def main():
 	browser = webdriver.Chrome(executable_path = "/Users/davidhey/Documents/chromedriver")
 	browser.set_window_position(0, 0)
 	browser.set_window_size(400, 1000)
-	browser.get('http://streeteasy.com/for-rent/nyc/area:115,107,105,157,305,321,328,307,303,304,320,319,302%7Cbeds:1')
+	browser.get('http://streeteasy.com/for-rent/nyc/area:100,300%7Cbeds:1')
 
 
 	num_pages = 100
@@ -88,7 +88,7 @@ def main():
 	return None
 
 
-def scrape_listings(url, num_pages=1):
+def scrape_listings(url, num_pages=1, page_cutoff=500):
 	"""Given a street easy search URL, pull all the listings into a dataframe
 	   Note: need to manually check how many pages of results there are
 	"""
@@ -100,7 +100,8 @@ def scrape_listings(url, num_pages=1):
 	apt_meta = []
 	last = False
 	retry = 0
-	while last == False and retry < 10:
+	page_count = 1
+	while last == False and retry < 10 and page_count <= page_cutoff:
 		try:
 			wait = WebDriverWait(browser, 10)
 			wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'next')))
@@ -140,6 +141,7 @@ def scrape_listings(url, num_pages=1):
 			to_click = browser.find_elements_by_class_name('next')
 			pprint.pprint(to_click)
 			to_click[0].click()
+			page_count += 1
 
 		except TimeoutException:
 			html_doc = browser.page_source

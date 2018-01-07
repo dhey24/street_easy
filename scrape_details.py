@@ -29,7 +29,7 @@ def scrape_details_wrapper(browser, url):
 		browser.get(url)
 		try:
 			wait = WebDriverWait(browser, 30)
-			wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'initial')))
+			wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'building-title')))
 			print "Page is ready!"
 			html_doc = browser.page_source
 			soup = BeautifulSoup(html_doc, "html.parser")

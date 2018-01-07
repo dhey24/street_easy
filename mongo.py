@@ -9,6 +9,7 @@ import pprint
 from selenium import webdriver
 import pandas as pd
 from bs4 import BeautifulSoup
+import datetime
 
 
 def mongo_connect(user, pw):
@@ -38,9 +39,8 @@ def main():
 
 	#look for listings that are not in names
 	url = "https://streeteasy.com/for-rent/nyc/area:100,300%7Cbeds:1"
-	#url = "https://streeteasy.com/for-rent/nyc/area:305,307,302%7Cbeds:1"
-	#num_pages = 21		#really need a better/dynamic way of doing this
-	df = scrape_listings(url)
+	#url = "https://streeteasy.com/for-rent/long-island-city/beds:1"
+	df = scrape_listings(url, page_cutoff=500)
 
 	#drop listings we already have in mongo
 	df = df[~df['name'].isin(names)]
@@ -48,7 +48,7 @@ def main():
 	#set up google maps client/variables
 	api_key =  SECRET_KEY
 	client = googlemaps.Client(key=api_key)
-	origins_dict = {"david_work_" : "320 Park Ave S, New York, NY 10010"}
+	origins_dict = {"wework_49th_" : "Tower 49, 12 E 49th St, New York, NY 10017"}
 
 
 	#convert df to list of dicts
@@ -88,13 +88,17 @@ def main():
 
 			#query street easy details for each url
 			deets_payload = scrape_details_wrapper(browser, listing["url"])
-			pprint.pprint(deets_payload)
+			#pprint.pprint(deets_payload)
 			if deets_payload['status']:
 				#combine payload with listing
 				for key, val in deets_payload.iteritems():
 					if key != "status":
 						listing[key] = val
-				
+
+				#add created datetime to listing record
+				listing['created_at'] = datetime.datetime.now()
+				pprint.pprint(listing)
+
 				#insert listing into mongo
 				result = coll.insert_one(listing)
 				print "mongo now has %s rows" % (str(coll.count()))

@@ -90,7 +90,8 @@ def main():
 				      'n_bath', 'n_bed', 'name', 'nearest_subway', 
 				      'neighborhood', 'no_fee', 'price', 'sq_feet', 'subways',
 				      'url', 'work_distance','work_duration_s',
-				      'coffee_count', 'coffee_names', 'grocery_count', 'grocery_names']
+				      'coffee_count', 'coffee_names', 'grocery_count', 'grocery_names', 
+				      'wework_49th_duration_s']
 	#only keep wanted columns
 	print df.isnull().sum()
 	df = df[wanted_cols]
@@ -115,7 +116,8 @@ def main():
 	feat_cols = [
 				 'sq_feet', 
 				 #'nearest_subway_distance', 
-				 'work_duration_s',
+				 #'work_duration_s',		#old work duration
+				 'wework_49th_duration_s', 	#new work duration
 		         'no_fee_bool', 
 		         'roof', 
 		         'dishwasher', 
@@ -143,14 +145,14 @@ def main():
 	sq_feet_sd = df['sq_feet'].std()
 	df['sq_feet_std'] = df.apply(lambda row: (row['sq_feet'] - sq_feet_mean) / sq_feet_sd, axis=1)
 
-	work_duration_s_mean = df['work_duration_s'].mean()
-	work_duration_s_sd = df['work_duration_s'].std()
-	df['work_duration_s_std'] = df.apply(lambda row: (row['work_duration_s'] - work_duration_s_mean) / work_duration_s_sd, axis=1)
+	work_duration_s_mean = df['wework_49th_duration_s'].mean()
+	work_duration_s_sd = df['wework_49th_duration_s'].std()
+	df['work_duration_s_std'] = df.apply(lambda row: (row['wework_49th_duration_s'] - work_duration_s_mean) / work_duration_s_sd, axis=1)
 
 	#replace og with standardized features
-	#feat_cols.remove('sq_feet')
-	#feat_cols.remove('work_duration_s')
-	#feat_cols.extend(['work_duration_s_std', 'sq_feet_std'])
+	feat_cols.remove('sq_feet')
+	feat_cols.remove('wework_49th_duration_s')
+	feat_cols.extend(['work_duration_s_std', 'sq_feet_std'])
 
 	#test train split
 	msk = np.random.rand(len(df)) < 0.8

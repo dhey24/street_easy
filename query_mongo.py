@@ -49,7 +49,7 @@ def add_commute(destination_address, destination_name):
 	"""
 	coll = mongo_connect(MONGO_USER, MONGO_PW)
 	ids = coll.find({destination_name + "distance_m": {"$exists": False}}, 
-					{'_id': 1, 'latlong': 1}).limit(1000)
+					{'_id': 1, 'latlong': 1})
 
 	#set up google maps client/variables
 	api_key =  SECRET_KEY
@@ -82,7 +82,7 @@ def add_commute(destination_address, destination_name):
 
 def test_commute(destination_name):
 	coll = mongo_connect(MONGO_USER, MONGO_PW)
-	ids = coll.find({destination_name + "distance_m": {"$exists": True}})
+	ids = coll.find({destination_name + "distance_m": {"$exists": True}}).limit(5)
 	for m_id in ids:
 		pprint.pprint(m_id)
 
@@ -92,5 +92,5 @@ def test_commute(destination_name):
 if __name__ == '__main__':
 	#update_places()
 	#main()
-	add_commute("12 E 49th St, New York, NY 10017", "wework_49th_")
-	#test_commute("wework_49th_")
+	add_commute("115 W 18th St, New York, NY 10011", "wework_chelsea_")
+	test_commute("wework_chelsea_")
