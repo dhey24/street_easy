@@ -8,6 +8,12 @@ from places import *
 import re
 import pprint
 import googlemaps
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.by import By
 
 
 def replace_unicode(field):
@@ -42,6 +48,58 @@ def update_places():
 		place_fields = place_agg(m_id['latlong'])
 		coll.update_one({"_id": m_id['_id']},
 					    {"$set": place_fields})
+
+
+def fill_null_neighborhoods():
+	"""fill in the listings in mongo with null neighborhoods!
+	"""
+	coll = mongo_connect(MONGO_USER, MONGO_PW)
+	listings = coll.find({"neighborhood":  "Unknown"},
+						 {'_id': 1, 
+						  'url': 1})
+
+	# print len(listings), "listings to fix"
+
+	browser = webdriver.Chrome(executable_path = "/Users/davidhey/Documents/chromedriver")
+	browser.set_window_position(0, 0)
+	browser.set_window_size(400, 1000)
+
+	for listing in listings:
+		pprint.pprint(listing)
+		browser.get(listing['url'])
+		try:
+			wait = WebDriverWait(browser, 30)
+			wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'actions')))
+			
+			html_doc = browser.page_source
+			soup = BeautifulSoup(html_doc, "html.parser")
+			
+			# extract hood from page
+			neighborhood = ''
+			listed = False
+			if "This unit is not currently listed on StreetEasy" in soup.text:
+				print "\nNO LONGER LISTED\n"
+				details = soup.find_all("div", class_="details_info")
+				try:
+					neighborhood = details[0].text.strip().split(" in ")[1]
+				except IndexError:
+					neighborhood = details[0].text.strip()
+			else:
+				listed = True
+				nobreaks = soup.find_all("span", class_="nobreak")
+				for nobreak in nobreaks:
+					if nobreak.find("a") != None:
+						neighborhood = nobreak.a.text
+			
+			# update hood in mongo			
+			if neighborhood != '':
+				print neighborhood
+				result = coll.update_one({"_id": listing['_id']},
+						    			 {"$set": {"neighborhood": neighborhood,
+						    			 		   "listed": listed}})
+				print "modified:", result.modified_count
+		except TimeoutException:
+			print "page took too long to load..."
 
 
 def add_commute(destination_address, destination_name):
@@ -89,8 +147,19 @@ def test_commute(destination_name):
 	return None
 
 
+def query():
+	"""fill in the listings in mongo with null neighborhoods!
+	"""
+	coll = mongo_connect(MONGO_USER, MONGO_PW)
+	count = coll.find({"neighborhood":  None}).count()
+
+	print count
+
+
 if __name__ == '__main__':
 	#update_places()
-	#main()
-	add_commute("115 W 18th St, New York, NY 10011", "wework_chelsea_")
-	test_commute("wework_chelsea_")
+	# main()
+	fill_null_neighborhoods()
+	#query()
+	# add_commute("115 W 18th St, New York, NY 10011", "wework_chelsea_")
+	# test_commute("wework_chelsea_")
