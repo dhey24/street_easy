@@ -54,9 +54,9 @@ def fill_null_neighborhoods():
 	"""fill in the listings in mongo with null neighborhoods!
 	"""
 	coll = mongo_connect(MONGO_USER, MONGO_PW)
-	listings = coll.find({"neighborhood":  "Unknown"},
+	listings = coll.find({"neighborhood":  None},
 						 {'_id': 1, 
-						  'url': 1})
+						  'url': 1}).sort( "_id", -1)
 
 	# print len(listings), "listings to fix"
 
@@ -76,7 +76,6 @@ def fill_null_neighborhoods():
 			
 			# extract hood from page
 			neighborhood = ''
-			listed = False
 			if "This unit is not currently listed on StreetEasy" in soup.text:
 				print "\nNO LONGER LISTED\n"
 				details = soup.find_all("div", class_="details_info")
@@ -85,7 +84,6 @@ def fill_null_neighborhoods():
 				except IndexError:
 					neighborhood = details[0].text.strip()
 			else:
-				listed = True
 				nobreaks = soup.find_all("span", class_="nobreak")
 				for nobreak in nobreaks:
 					if nobreak.find("a") != None:
@@ -151,15 +149,15 @@ def query():
 	"""fill in the listings in mongo with null neighborhoods!
 	"""
 	coll = mongo_connect(MONGO_USER, MONGO_PW)
-	count = coll.find({"neighborhood":  None}).count()
+	count = coll.find({"neighborhood":  "Unknown"}).count()
 
 	print count
 
 
 if __name__ == '__main__':
 	#update_places()
-	# main()
-	fill_null_neighborhoods()
+	main()
+	# fill_null_neighborhoods()
 	#query()
 	# add_commute("115 W 18th St, New York, NY 10011", "wework_chelsea_")
 	# test_commute("wework_chelsea_")

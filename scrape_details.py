@@ -33,7 +33,7 @@ def scrape_details_wrapper(browser, url):
 			print "Page is ready!"
 			html_doc = browser.page_source
 			soup = BeautifulSoup(html_doc, "html.parser")
-
+			
 			#no fee?
 			s_fee = soup.find_all('div', class_='status nofee')
 			if len(s_fee) > 0: 	#double check this doesnt break with fee apts

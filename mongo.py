@@ -50,7 +50,6 @@ def main():
 	client = googlemaps.Client(key=api_key)
 	origins_dict = {"wework_49th_" : "Tower 49, 12 E 49th St, New York, NY 10017"}
 
-
 	#convert df to list of dicts
 	print df.head()
 	listings = df.to_dict(orient='records')
@@ -111,6 +110,7 @@ def main():
 			print "EXCEPTION: some sort of error during listing enrichment"
 			print e
 			listings.append(listing)
+
 
 if __name__ == '__main__':
 	main()
