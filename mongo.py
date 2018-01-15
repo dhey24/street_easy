@@ -40,7 +40,7 @@ def main():
 	#look for listings that are not in names
 	url = "https://streeteasy.com/for-rent/nyc/area:100,300%7Cbeds:1"
 	#url = "https://streeteasy.com/for-rent/long-island-city/beds:1"
-	df = scrape_listings(url, page_cutoff=500)
+	df = scrape_listings(url, page_cutoff=50)
 
 	#drop listings we already have in mongo
 	df = df[~df['name'].isin(names)]

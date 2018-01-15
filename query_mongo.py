@@ -93,8 +93,7 @@ def fill_null_neighborhoods():
 			if neighborhood != '':
 				print neighborhood
 				result = coll.update_one({"_id": listing['_id']},
-						    			 {"$set": {"neighborhood": neighborhood,
-						    			 		   "listed": listed}})
+						    			 {"$set": {"neighborhood": neighborhood}})
 				print "modified:", result.modified_count
 		except TimeoutException:
 			print "page took too long to load..."
@@ -156,8 +155,8 @@ def query():
 
 if __name__ == '__main__':
 	#update_places()
-	main()
-	# fill_null_neighborhoods()
+	# main()
+	fill_null_neighborhoods()
 	#query()
 	# add_commute("115 W 18th St, New York, NY 10011", "wework_chelsea_")
 	# test_commute("wework_chelsea_")
