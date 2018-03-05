@@ -1,0 +1,32 @@
+# HTTP Cookie File downloaded with cookies.txt by Genuinous @genuinous
+# This file can be used by wget, curl, aria2c and other standard compliant tools.
+# Usage Examples:
+#   1) wget -x --load-cookies cookies.txt "https://streeteasy.com/"
+#   2) curl --cookie cookies.txt "https://streeteasy.com/"
+#   3) aria2c --load-cookies cookies.txt "https://streeteasy.com/"
+#
+streeteasy.com	FALSE	/	FALSE	1537044621	streeteasy_site	nyc
+streeteasy.com	FALSE	/	FALSE	1537044621	_se_t	585eceda-7c40-4372-bf43-c1dd11316cdc
+streeteasy.com	FALSE	/	FALSE	1537045408	show_popup_count	1
+streeteasy.com	FALSE	/	FALSE	1821482005	rem	1436643%7C2731049a6ff2eb65
+.streeteasy.com	TRUE	/	FALSE	1570385090	__gads	ID=d031275da1e7b3f3:T=1507313090:S=ALNI_MbcE6jb3fRdI9E_H4OQhi0fncgsPA
+streeteasy.com	FALSE	/	FALSE	1668988993	ki_u	d1a06d72-7ff2-5180-06e1-0934
+streeteasy.com	FALSE	/	FALSE	1668989001	ki_s	152716%3A0.0.0.0.0%3B181982%3A1.0.0.0.2
+streeteasy.com	FALSE	/	FALSE	1611688852	_mibhv	anon-1505426765828-2295142159_6815
+.streeteasy.com	TRUE	/	FALSE	1580152852	_mkto_trk	id:324-WZA-498&amp;token:_mch-streeteasy.com-1507313093212-56558
+.streeteasy.com	TRUE	/	FALSE	1580152851	_ga	GA1.2.118530552.1505426766
+streeteasy.com	FALSE	/	FALSE	1551656129	D_SID	72.226.124.138:x+kvyfkv95GkCuzkDO8htjxS8yc+dC1MwPBF9YsBxYU
+streeteasy.com	FALSE	/	FALSE	1546811813	se%3Asearch%3Asales%3Astate	%7C%7C%7C%7C
+.streeteasy.com	TRUE	/	FALSE	2146414554	ab.storage.deviceId.4854d9ed-b775-43a6-a305-ffc1686f13e0	%7B%22g%22%3A%225aa2b8af-12c1-e43e-9942-bcbe345a1065%22%2C%22c%22%3A1515275754065%2C%22l%22%3A1515275754065%7D
+streeteasy.com	FALSE	/	FALSE	1547396824	se%3Asearch%3Ashared%3Astate	402%7C1%7C%7Cfalse
+streeteasy.com	FALSE	/	FALSE	1674847253	ki_r	
+streeteasy.com	FALSE	/	FALSE	1547396824	se%3Asearch%3Arentals%3Astate	false%7C%7C3000%7C%7C
+.streeteasy.com	TRUE	/	FALSE	2146999620	ab.storage.sessionId.4854d9ed-b775-43a6-a305-ffc1686f13e0	%7B%22g%22%3A%22762c035b-c81a-489e-a69e-3379b310cbef%22%2C%22e%22%3A1515862620166%2C%22c%22%3A1515860820176%2C%22l%22%3A1515860820176%7D
+streeteasy.com	FALSE	/	FALSE	1674847253	ki_t	1505508624554%3B1517068529694%3B1517080853917%3B28%3B193
+streeteasy.com	FALSE	/	TRUE	0	se_lsa	2018-03-03+18%3A21%3A32+-0500
+.streeteasy.com	TRUE	/	TRUE	0	_ses	BAh7CUkiD3Nlc3Npb25faWQGOgZFVEkiJWQzY2UyZTVjMDgxYjQyMWRkZjY4NTM0YmMxOGMxYTk5BjsAVEkiDHVzZXJfaWQGOwBGaQPj6xVJIhJsb29rX2FuZF9mZWVsBjsARkkiCTIwMTQGOwBUSSIQX2NzcmZfdG9rZW4GOwBGSSIxckRQMjZlbnlmdkExcS93UktkQkM5MGVCZ2FxVnd0TXhjSVNLQ2ppZ3BTTT0GOwBG--ae3db31ab60d4c45a7a077165314233410514157
+streeteasy.com	FALSE	/	FALSE	1522748130	D_IID	45156AB7-688C-353A-943D-95DBE2B2EFDA
+streeteasy.com	FALSE	/	FALSE	1522748130	D_UID	37EFA8B1-951D-3ED4-8964-7698AADFB599
+streeteasy.com	FALSE	/	FALSE	1522748130	D_ZID	662FEE5C-DD43-33C0-BA1C-6EFD6DDE6797
+streeteasy.com	FALSE	/	FALSE	1522748130	D_ZUID	D1544CEB-F6BD-33CA-AAE1-2330876664D2
+streeteasy.com	FALSE	/	FALSE	1522748130	D_HID	79D715E2-98B4-334A-B0D8-EB7864A10AA1
